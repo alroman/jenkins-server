@@ -16,12 +16,12 @@ class ParserBase:
 
     def dispatch(self):
 
-        self.parse()
+        if self.parse():
 
-        cmd = self.command
+            cmd = self.command
 
-        # Create command with params
-        for p in self.params:
-            cmd += " " + p
+            # Create command with params
+            for p in self.params:
+                cmd += " " + p
 
-        print cmd
+            print cmd
