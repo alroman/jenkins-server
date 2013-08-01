@@ -20,7 +20,7 @@ class JobRunner:
         self.runParsers()
 
     def runParsers(self):
-        testmessage = "commit 3942e0aaf204569b8c123c4864ff1f630de70969\nAuthor: Alfonso Roman <aroman@oid.ucla.edu>\nDate:   Tue Jul 30 14:45:13 2013 -0700\n\nfirst commit\n\nphpunit: @javascript @what @test2\n\nA     dispatcher.py\nA     course/test/dummy_test.php\nM     course/test/dummy2_test.php"
+        testmessage = "commit 3942e0aaf204569b8c123c4864ff1f630de70969\nAuthor: Alfonso Roman <aroman@oid.ucla.edu>\nDate:   Tue Jul 30 14:45:13 2013 -0700\n\nfirst commit\n\nbehat: @javascript @hello @test1 \nphpunit: @javascript @what @test2\n\nA     dispatcher.py\nA     course/test/dummy_test.php\nM     course/test/dummy2_test.php"
         for f in glob.glob("./parsers/parser_*.py"):
             
             # module = re.search(r'_.*\.py', f).group(0)

@@ -5,9 +5,8 @@ from parsers import parser
 #
 # PHPUnit parser
 #
+
 import re
-import StringIO
-from pprint import pprint
 
 class Parser(parser.ParserBase):
 
@@ -22,56 +21,42 @@ class Parser(parser.ParserBase):
         ]
 
     def parse(self):
-        commitmsg = StringIO.StringIO(self.msg)       
         ret = False
-        # Get SHA
-        commitline = commitmsg.readline()
-        match = re.match(r"commit (\w+)", commitline)
-        if match:
-            self.fields['sha'] = match.group(1)
-
-        # Get commit author
-        authorline = commitmsg.readline()
-        match = re.match(r"Author: (?P<firstname>\w+) (?P<lastname>\w+) <(?P<email>.+@[\w+\.]+\w+)>", authorline)
-        if match:    
-            author = match.groupdict()
-            self.fields = dict(self.fields.items() + author.items())
-
-        # Get date
-        dateline = commitmsg.readline()
-        match = re.match(r"Date:\s*(.*)", dateline)
-        if match:
-            self.fields['date'] = match.group(1)
-
+        
         # Get commit message body, PHPUnit hooks, and _test.php files altered
         body = ""
         test_files = []
-        for line in commitmsg.readlines():
+        tags = []
+        for line in self.msgIO.readlines():
             
             # Try to match phpunit tags
             match = re.match(r"phpunit:\s*@(\S+)+", line)
             if match:
-                tags = re.findall(r"(@\S+)", line)
-                self.fields['phpunit'] = tags
-                
-                # Add a --group param
-                groupopt = "--group " + ','.join(tags) 
-                self.params.append(groupopt)
-                ret = True
+                tags = tags + re.findall(r"@(\S+)", line)
                 
             # Try to match altered files ending in _test.php
-            match = re.match(r"[AM]\s*(\S+_test.php)", line)
-            if match:
-                test_files.append(match.group(1))
+            else:
+                match = re.match(r"[AM]\s*(\S+_test.php)", line)
+                if match:
+                    test_files.append(match.group(1))
+            # Build message body
             body += line
         
+        # Add fields to dictionary and build command params
         if body:
             self.fields['body'] = body
+            
+        if tags:
+            self.fields['phpunit'] = tags
+            # Add tags as a --group command param
+            groupopt = "--group " + ','.join(tags) 
+            self.params.append(groupopt)
+            ret = True
             
         if test_files:
             self.fields['test_files'] = test_files
             # Add files as command params if tags weren't given
-            if not ret:
+            if not tags:
                 groupopt = ' '.join(test_files) 
                 self.params.append(groupopt)
                 ret = True
